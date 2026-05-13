@@ -38,23 +38,23 @@ Pozwalają na ręczne sterowanie filtrami. Jeśli opcjonalne pola zostaną puste
 
     GET /api/news/search/everything
 
-        Wymagane: userId, pageSize (20-100), page (od 1).
+        Wymagane: userId.
 
-        Jeśli parametry wyszukiwania są puste, system użyje słów kluczowych i języka użytkownika z bazy.
+        Jeśli parametry wyszukiwania są puste, system użyje słów kluczowych.
 
         Można używać języka polskiego (pl).
 
-        Reszta parametrów zgodnie z dokumentacją Everything.
+        Reszta parametrów zgodnie z dokumentacją Everything. https://newsapi.org/docs/endpoints/everything
 
     GET /api/news/search/top-headlines
 
-        Wymagane: userId, pageSize (20-100), page (od 1).
+        Wymagane: userId.
 
         Jeśli parametry są puste, system użyje pierwszego słowa kluczowego użytkownika.
 
         Język: Jeśli użytkownik ma en, szuka po angielsku. W innym przypadku szuka we wszystkich językach.
 
-        Reszta parametrów zgodnie z dokumentacją Top Headlines.
+        Reszta parametrów zgodnie z dokumentacją Top Headlines. https://newsapi.org/docs/endpoints/top-headlines
 
 Ważne informacje
 
@@ -62,4 +62,4 @@ Ważne informacje
 
     Klucz API: Klucz do NewsApi należy skonfigurować w pliku application.properties.
 
-    Dokumentacja zewnętrzna: Szczegółowe zasady działania filtrów (np. sortBy, sources) znajdziesz na stronie: NewsApi Documentation.
+    Dokumentacja zewnętrzna: Szczegółowe zasady działania filtrów (np. sortBy, sources) znajdziesz na stronie: NewsApi Documentation. https://newsapi.org/docs/endpoints
