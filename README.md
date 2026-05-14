@@ -63,3 +63,20 @@ Ważne informacje
     Klucz API: Klucz do NewsApi należy skonfigurować w pliku application.properties.
 
     Dokumentacja zewnętrzna: Szczegółowe zasady działania filtrów (np. sortBy, sources) znajdziesz na stronie: NewsApi Documentation. https://newsapi.org/docs/endpoints
+
+
+
+Dostęp do większości endpointów wymaga tokena JWT przesyłanego w nagłówku:
+
+Authorization: Bearer <twój_token>
+Endpointy publiczne:
+
+    POST /api/auth/register – Rejestracja użytkownika.
+
+    Wymagane: username, password, keyword, language (kod języka, np. pl).
+
+    Podczas rejestracji automatycznie przypisywane jest pierwsze słowo kluczowe i język.
+
+    POST /api/auth/login – Logowanie użytkownika.
+
+    Zwraca: token oraz userId.
