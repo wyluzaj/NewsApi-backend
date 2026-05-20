@@ -4,40 +4,59 @@ import {
     Box,
     Button,
     Link,
+    MenuItem,
     Paper,
     TextField,
 } from '@mui/material';
-import { login } from '../api/authApi';
+import { register } from '../api/authApi';
 
-type LoginPageProps = {
-    onGoToRegister?: () => void;
+type RegisterPageProps = {
+    onGoToLogin: () => void;
 };
 
-export function LoginPage({ onGoToRegister }: LoginPageProps) {
+export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [repeatedPassword, setRepeatedPassword] = useState('');
+    const [keyword, setKeyword] = useState('');
+    const [language, setLanguage] = useState('pl');
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
-    async function handleLogin() {
+    async function handleRegister() {
         setError('');
+        setSuccess('');
 
-        if (!email || !password) {
-            setError('Uzupełnij e-mail i hasło.');
+        if (!name || !email || !password || !repeatedPassword || !keyword || !language) {
+            setError('Uzupełnij wszystkie pola.');
+            return;
+        }
+
+        if (password !== repeatedPassword) {
+            setError('Hasła nie są takie same.');
             return;
         }
 
         try {
-            const response = await login({
+            await register({
+                name,
                 email,
                 password,
+                keyword,
+                language,
             });
 
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('userId', String(response.userId));
+            setSuccess('Konto zostało utworzone. Możesz się teraz zalogować.');
 
-            alert('Zalogowano poprawnie');
+            setName('');
+            setEmail('');
+            setPassword('');
+            setRepeatedPassword('');
+            setKeyword('');
+            setLanguage('pl');
         } catch {
-            setError('Nie udało się zalogować. Sprawdź dane.');
+            setError('Nie udało się utworzyć konta.');
         }
     }
 
@@ -67,11 +86,11 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                     component="form"
                     onSubmit={(event) => {
                         event.preventDefault();
-                        handleLogin();
+                        handleRegister();
                     }}
                     sx={{
                         width: '100%',
-                        maxWidth: 430,
+                        maxWidth: 460,
                     }}
                 >
                     <Box
@@ -89,7 +108,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             boxShadow: '0 14px 30px rgba(15, 23, 42, 0.25)',
                         }}
                     >
-                        📰
+                        🛡️
                     </Box>
 
                     <Box
@@ -104,21 +123,21 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             color: '#64748b',
                         }}
                     >
-                        NewsFlow
+                        Nowe konto
                     </Box>
 
                     <Box
                         component="h1"
                         sx={{
                             margin: 0,
-                            fontSize: { xs: 34, md: 40 },
-                            lineHeight: 1.15,
-                            fontWeight: 800,
+                            fontSize: { xs: 34, md: 42 },
+                            lineHeight: 1.05,
+                            fontWeight: 900,
                             color: '#020617',
-                            letterSpacing: '-0.02em',
+                            letterSpacing: '-0.04em',
                         }}
                     >
-                        Zaloguj się
+                        Rejestracja
                     </Box>
 
                     <Box
@@ -131,11 +150,20 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             lineHeight: 1.6,
                         }}
                     >
-                        Po zalogowaniu przejdziesz do spersonalizowanej strony głównej z wiadomościami.
+                        Utwórz konto i ustaw pierwsze preferencje wiadomości.
                     </Box>
 
                     <Box sx={{ display: 'grid', gap: 2 }}>
                         {error && <Alert severity="error">{error}</Alert>}
+                        {success && <Alert severity="success">{success}</Alert>}
+
+                        <TextField
+                            label="Nazwa użytkownika"
+                            placeholder="np. Magda"
+                            fullWidth
+                            value={name}
+                            onChange={(event) => setName(event.target.value)}
+                        />
 
                         <TextField
                             label="Adres e-mail"
@@ -154,6 +182,36 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
                         />
+
+                        <TextField
+                            label="Powtórz hasło"
+                            placeholder="Wpisz hasło ponownie"
+                            type="password"
+                            fullWidth
+                            value={repeatedPassword}
+                            onChange={(event) => setRepeatedPassword(event.target.value)}
+                        />
+
+                        <TextField
+                            label="Pierwsze słowo kluczowe"
+                            placeholder="np. sport"
+                            fullWidth
+                            value={keyword}
+                            onChange={(event) => setKeyword(event.target.value)}
+                        />
+
+                        <TextField
+                            label="Język wiadomości"
+                            select
+                            fullWidth
+                            value={language}
+                            onChange={(event) => setLanguage(event.target.value)}
+                        >
+                            <MenuItem value="pl">polski / pl</MenuItem>
+                            <MenuItem value="en">english / en</MenuItem>
+                            <MenuItem value="de">deutsch / de</MenuItem>
+                            <MenuItem value="fr">français / fr</MenuItem>
+                        </TextField>
 
                         <Button
                             type="submit"
@@ -174,7 +232,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                                 },
                             }}
                         >
-                            Zaloguj się
+                            Utwórz konto
                         </Button>
                     </Box>
 
@@ -187,11 +245,11 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             fontSize: 14,
                         }}
                     >
-                        Nie masz konta?{' '}
+                        Masz już konto?{' '}
                         <Link
                             component="button"
                             type="button"
-                            onClick={onGoToRegister}
+                            onClick={onGoToLogin}
                             underline="none"
                             sx={{
                                 fontWeight: 900,
@@ -199,7 +257,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                                 cursor: 'pointer',
                             }}
                         >
-                            Utwórz konto
+                            Zaloguj się
                         </Link>
                     </Box>
                 </Box>
@@ -265,7 +323,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                                 marginBottom: 4,
                             }}
                         >
-                            Personalizowane wiadomości
+                            Start personalizacji
                         </Box>
 
                         <Box
@@ -273,13 +331,13 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             sx={{
                                 margin: 0,
                                 maxWidth: 580,
-                                fontSize: { lg: 42, xl: 50 },
-                                lineHeight: 1.12,
+                                fontSize: { lg: 40, xl: 48 },
+                                lineHeight: 1.14,
                                 fontWeight: 800,
                                 letterSpacing: '-0.02em',
                             }}
                         >
-                            Czytaj tylko to, co naprawdę Cię interesuje.
+                            Wybierz język, słowo kluczowe i zacznij od swoich tematów.
                         </Box>
 
                         <Box
@@ -292,7 +350,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                                 lineHeight: 1.7,
                             }}
                         >
-                            NewsFlow zbiera wiadomości według Twoich preferencji.
+                            Zapiszemy Twoje preferencje, dzięki czemu zobaczysz lepiej dopasowane newsy.
                         </Box>
                     </Box>
 
@@ -303,7 +361,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             gap: 2,
                         }}
                     >
-                        {['Szybkość', 'Wygoda', 'Personalizacja'].map((item) => (
+                        {['Język', 'Słowa', 'Źródła'].map((item) => (
                             <Box
                                 key={item}
                                 sx={{
