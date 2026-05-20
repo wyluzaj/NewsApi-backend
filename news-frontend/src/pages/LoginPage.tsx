@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import {
     Alert,
     Box,
@@ -89,7 +91,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             boxShadow: '0 14px 30px rgba(15, 23, 42, 0.25)',
                         }}
                     >
-                        📰
+                        <NewspaperOutlinedIcon fontSize="large" />
                     </Box>
 
                     <Box
@@ -131,7 +133,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                             lineHeight: 1.6,
                         }}
                     >
-                        Po zalogowaniu przejdziesz do spersonalizowanej strony głównej z wiadomościami.
+                        Po zalogowaniu przejdziesz do strony głównej z newsami
                     </Box>
 
                     <Box sx={{ display: 'grid', gap: 2 }}>
@@ -260,7 +262,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                                 backgroundColor: 'rgba(255,255,255,0.1)',
                                 paddingX: 2,
                                 paddingY: 1,
-                                fontSize: 14,
+                                fontSize: 20,
                                 fontWeight: 800,
                                 marginBottom: 4,
                             }}
@@ -279,7 +281,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                                 letterSpacing: '-0.02em',
                             }}
                         >
-                            Czytaj tylko to, co naprawdę Cię interesuje.
+                            Czytaj tylko to, co jest dla Ciebie ważne.
                         </Box>
 
                         <Box
@@ -292,7 +294,7 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                                 lineHeight: 1.7,
                             }}
                         >
-                            NewsFlow zbiera wiadomości według Twoich preferencji.
+                            NewsFlow - wiadomości według Twoich preferencji
                         </Box>
                     </Box>
 
@@ -313,8 +315,8 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
                                     backdropFilter: 'blur(8px)',
                                 }}
                             >
-                                <Box sx={{ fontSize: 24, marginBottom: 1 }}>✨</Box>
-                                <Box sx={{ fontSize: 14, fontWeight: 800 }}>{item}</Box>
+                                <AutoAwesomeOutlinedIcon sx={{ fontSize: 24, marginBottom: 1 }} />
+                                <Box sx={{ fontSize: 20, fontWeight: 800 }}>{item}</Box>
                             </Box>
                         ))}
                     </Box>
