@@ -1,3 +1,5 @@
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { useState } from 'react';
 import {
     Alert,
@@ -65,17 +67,18 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
             sx={{
                 minHeight: '100vh',
                 backgroundColor: '#f1f5f9',
-                padding: { xs: 2, md: 3 },
+                padding: { xs: 1.5, md: 2 },
                 display: 'grid',
                 gridTemplateColumns: { xs: '1fr', lg: '1fr 1.1fr' },
-                gap: 2,
+                gap: 1.5,
+                overflow: 'hidden',
             }}
         >
             <Paper
                 elevation={0}
                 sx={{
-                    borderRadius: '32px',
-                    padding: { xs: 3, md: 6 },
+                    borderRadius: '28px',
+                    padding: { xs: 2, md: 3 },
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -90,25 +93,25 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
                     }}
                     sx={{
                         width: '100%',
-                        maxWidth: 460,
+                        maxWidth: 440,
                     }}
                 >
                     <Box
                         sx={{
-                            width: 56,
-                            height: 56,
-                            borderRadius: '18px',
+                            width: 44,
+                            height: 44,
+                            borderRadius: '14px',
                             backgroundColor: '#020617',
                             color: '#ffffff',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: 28,
-                            marginBottom: 3,
-                            boxShadow: '0 14px 30px rgba(15, 23, 42, 0.25)',
+                            fontSize: 22,
+                            marginBottom: 1.5,
+                            boxShadow: '0 10px 20px rgba(15, 23, 42, 0.18)',
                         }}
                     >
-                        🛡️
+                        <ShieldOutlinedIcon fontSize="medium" />
                     </Box>
 
                     <Box
@@ -130,11 +133,11 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
                         component="h1"
                         sx={{
                             margin: 0,
-                            fontSize: { xs: 34, md: 42 },
-                            lineHeight: 1.05,
-                            fontWeight: 900,
+                            fontSize: { xs: 30, md: 34 },
+                            lineHeight: 1.1,
+                            fontWeight: 800,
                             color: '#020617',
-                            letterSpacing: '-0.04em',
+                            letterSpacing: '-0.02em',
                         }}
                     >
                         Rejestracja
@@ -143,17 +146,17 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
                     <Box
                         component="p"
                         sx={{
-                            marginTop: 2,
-                            marginBottom: 4,
+                            marginTop: 1,
+                            marginBottom: 2,
                             color: '#64748b',
-                            fontSize: 16,
-                            lineHeight: 1.6,
+                            fontSize: 14,
+                            lineHeight: 1.4,
                         }}
                     >
-                        Utwórz konto i ustaw pierwsze preferencje wiadomości.
+                        Utwórz konto i ustaw pierwsze preferencje.
                     </Box>
 
-                    <Box sx={{ display: 'grid', gap: 2 }}>
+                    <Box sx={{ display: 'grid', gap: 1.2 }}>
                         {error && <Alert severity="error">{error}</Alert>}
                         {success && <Alert severity="success">{success}</Alert>}
 
@@ -318,12 +321,12 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
                                 backgroundColor: 'rgba(255,255,255,0.1)',
                                 paddingX: 2,
                                 paddingY: 1,
-                                fontSize: 14,
+                                fontSize: 20,
                                 fontWeight: 800,
                                 marginBottom: 4,
                             }}
                         >
-                            Start personalizacji
+                            Czas start
                         </Box>
 
                         <Box
@@ -337,7 +340,7 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
                                 letterSpacing: '-0.02em',
                             }}
                         >
-                            Wybierz język, słowo kluczowe i zacznij od swoich tematów.
+                            Wybierz język, słowo kluczowe i zacznij czytać już teraz.
                         </Box>
 
                         <Box
@@ -361,7 +364,7 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
                             gap: 2,
                         }}
                     >
-                        {['Język', 'Słowa', 'Źródła'].map((item) => (
+                        {['Szybkość', 'Wygoda', 'Personalizacja'].map((item) => (
                             <Box
                                 key={item}
                                 sx={{
@@ -371,8 +374,8 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
                                     backdropFilter: 'blur(8px)',
                                 }}
                             >
-                                <Box sx={{ fontSize: 24, marginBottom: 1 }}>✨</Box>
-                                <Box sx={{ fontSize: 14, fontWeight: 800 }}>{item}</Box>
+                                <AutoAwesomeOutlinedIcon sx={{ fontSize: 24, marginBottom: 1 }} />
+                                <Box sx={{ fontSize: 20, fontWeight: 800 }}>{item}</Box>
                             </Box>
                         ))}
                     </Box>
