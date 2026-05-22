@@ -19,3 +19,23 @@ export async function apiFetch<T>(
 
     return response.json() as Promise<T>;
 }
+
+export async function apiFetchVoid(
+    path: string,
+    options: RequestInit = {}
+): Promise<void> {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(path, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...options.headers,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Błąd API: ${response.status}`);
+    }
+}
