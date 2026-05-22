@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
@@ -16,10 +14,10 @@ import {
     Box,
     Button,
     Chip,
+    Collapse,
     Container,
     Divider,
     IconButton,
-    InputAdornment,
     MenuItem,
     Paper,
     Stack,
@@ -42,16 +40,28 @@ type UserPageProps = {
     onLogout: () => void;
 };
 
+type PreferencesMessage = {
+    text: string;
+    severity: 'success' | 'error';
+};
+
 const languageOptions = [
     { language: 'polski', abbreviation: 'pl', label: 'polski / pl' },
+    { language: 'german', abbreviation: 'de', label: 'german / de' },
     { language: 'english', abbreviation: 'en', label: 'english / en' },
-    { language: 'deutsch', abbreviation: 'de', label: 'deutsch / de' },
-    { language: 'français', abbreviation: 'fr', label: 'français / fr' },
+    { language: 'spanish', abbreviation: 'es', label: 'spanish / es' },
+    { language: 'french', abbreviation: 'fr', label: 'french / fr' },
+    { language: 'italian', abbreviation: 'it', label: 'italian / it' },
+    { language: 'dutch', abbreviation: 'nl', label: 'dutch / nl' },
+    { language: 'norwegian', abbreviation: 'no', label: 'norwegian / no' },
+    { language: 'portuguese', abbreviation: 'pt', label: 'portuguese / pt' },
+    { language: 'russian', abbreviation: 'ru', label: 'russian / ru' },
+    { language: 'swedish', abbreviation: 'sv', label: 'swedish / sv' },
 ];
 
 function getLanguageLabel(language: UserLanguage) {
-    const abbreviation = language.abbreviation ?? '';
     const name = language.language ?? '';
+    const abbreviation = language.abbreviation ?? '';
 
     if (name && abbreviation) {
         return `${name} / ${abbreviation}`;
@@ -77,10 +87,35 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
     const [selectedLanguage, setSelectedLanguage] = useState('pl');
     const [newKeyword, setNewKeyword] = useState('');
 
-    const [accountMessage, setAccountMessage] = useState('');
-    const [preferencesMessage, setPreferencesMessage] = useState('');
     const [error, setError] = useState('');
+    const [accountMessage, setAccountMessage] = useState('');
+    const [preferencesMessage, setPreferencesMessage] =
+        useState<PreferencesMessage | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    function getAvatarLetter() {
+        const source = name.trim() || email.trim();
+
+        return source.slice(0, 1).toUpperCase();
+    }
+
+    useEffect(() => {
+        loadProfile();
+    }, []);
+
+    useEffect(() => {
+        if (!preferencesMessage) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => {
+            setPreferencesMessage(null);
+        }, 4500);
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [preferencesMessage]);
 
     async function loadProfile() {
         if (!userId) {
@@ -110,10 +145,6 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
         }
     }
 
-    useEffect(() => {
-        loadProfile();
-    }, []);
-
     function handleLogout() {
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
@@ -126,8 +157,13 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
         setError('');
         setAccountMessage('');
 
-        if (!name.trim() || !email.trim()) {
-            setError('Nazwa użytkownika i adres e-mail są wymagane.');
+        if (!name.trim()) {
+            setError('Nazwa użytkownika jest wymagana.');
+            return;
+        }
+
+        if (!email.trim()) {
+            setError('Adres e-mail jest wymagany.');
             return;
         }
 
@@ -149,8 +185,8 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
             setEmail(response.user.email);
             setLanguages(response.user.languages ?? []);
             setKeywords(response.user.keywords ?? []);
-            setNewPassword('');
             setOldPassword('');
+            setNewPassword('');
 
             localStorage.setItem('token', response.token);
             localStorage.setItem('email', response.user.email);
@@ -163,17 +199,16 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
 
     async function handleAddLanguage() {
         setError('');
-        setPreferencesMessage('');
 
-        if (!selectedLanguage) {
-            setError('Wybierz język.');
-            return;
-        }
-
-        const option = languageOptions.find((item) => item.abbreviation === selectedLanguage);
+        const option = languageOptions.find(
+            (language) => language.abbreviation === selectedLanguage
+        );
 
         if (!option) {
-            setError('Nieprawidłowy język.');
+            setPreferencesMessage({
+                text: 'Wybierz poprawny język.',
+                severity: 'error',
+            });
             return;
         }
 
@@ -182,7 +217,10 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
         );
 
         if (alreadyExists) {
-            setError('Ten język jest już dodany.');
+            setPreferencesMessage({
+                text: 'Ten język jest już dodany.',
+                severity: 'error',
+            });
             return;
         }
 
@@ -193,34 +231,51 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
             });
 
             setLanguages((current) => [...current, createdLanguage]);
-            setPreferencesMessage('Język został dodany.');
+
+            setPreferencesMessage({
+                text: 'Język został dodany.',
+                severity: 'success',
+            });
         } catch {
-            setError('Nie udało się dodać języka.');
+            setPreferencesMessage({
+                text: 'Nie udało się dodać języka.',
+                severity: 'error',
+            });
         }
     }
 
     async function handleRemoveLanguage(languageId: number) {
         setError('');
-        setPreferencesMessage('');
 
         try {
             await deleteUserLanguage(languageId);
 
-            setLanguages((current) => current.filter((language) => language.id !== languageId));
-            setPreferencesMessage('Język został usunięty.');
+            setLanguages((current) =>
+                current.filter((language) => language.id !== languageId)
+            );
+
+            setPreferencesMessage({
+                text: 'Język został usunięty.',
+                severity: 'success',
+            });
         } catch {
-            setError('Nie udało się usunąć języka.');
+            setPreferencesMessage({
+                text: 'Nie udało się usunąć języka.',
+                severity: 'error',
+            });
         }
     }
 
     async function handleAddKeyword() {
         setError('');
-        setPreferencesMessage('');
 
         const cleanedKeyword = newKeyword.trim();
 
         if (!cleanedKeyword) {
-            setError('Wpisz słowo kluczowe.');
+            setPreferencesMessage({
+                text: 'Wpisz słowo kluczowe.',
+                severity: 'error',
+            });
             return;
         }
 
@@ -229,7 +284,10 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
         );
 
         if (alreadyExists) {
-            setError('To słowo kluczowe jest już dodane.');
+            setPreferencesMessage({
+                text: 'To słowo kluczowe jest już dodane.',
+                severity: 'error',
+            });
             return;
         }
 
@@ -240,23 +298,38 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
 
             setKeywords((current) => [...current, createdKeyword]);
             setNewKeyword('');
-            setPreferencesMessage('Słowo kluczowe zostało dodane.');
+
+            setPreferencesMessage({
+                text: 'Słowo kluczowe zostało dodane.',
+                severity: 'success',
+            });
         } catch {
-            setError('Nie udało się dodać słowa kluczowego.');
+            setPreferencesMessage({
+                text: 'Nie udało się dodać słowa kluczowego.',
+                severity: 'error',
+            });
         }
     }
 
     async function handleRemoveKeyword(keywordId: number) {
         setError('');
-        setPreferencesMessage('');
 
         try {
             await deleteUserKeyword(keywordId);
 
-            setKeywords((current) => current.filter((keyword) => keyword.id !== keywordId));
-            setPreferencesMessage('Słowo kluczowe zostało usunięte.');
+            setKeywords((current) =>
+                current.filter((keyword) => keyword.id !== keywordId)
+            );
+
+            setPreferencesMessage({
+                text: 'Słowo kluczowe zostało usunięte.',
+                severity: 'success',
+            });
         } catch {
-            setError('Nie udało się usunąć słowa kluczowego.');
+            setPreferencesMessage({
+                text: 'Nie udało się usunąć słowa kluczowego.',
+                severity: 'error',
+            });
         }
     }
 
@@ -341,15 +414,37 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                 </Toolbar>
             </AppBar>
 
-            <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
+            <Container
+                maxWidth="xl"
+                sx={{
+                    height: { xs: 'auto', md: 'calc(100vh - 64px)' },
+                    py: { xs: 3, md: 2 },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: { xs: 'visible', md: 'hidden' },
+                }}
+            >
+                {error && (
+                    <Alert severity="error" sx={{ mb: 2, borderRadius: '18px', flexShrink: 0 }}>
+                        {error}
+                    </Alert>
+                )}
+
+                {isLoading && (
+                    <Alert severity="info" sx={{ mb: 2, borderRadius: '18px', flexShrink: 0 }}>
+                        Ładowanie danych użytkownika...
+                    </Alert>
+                )}
+
                 <Paper
                     elevation={0}
                     sx={{
                         borderRadius: '28px',
-                        p: { xs: 2, md: 3 },
-                        mb: 3,
+                        p: { xs: 2, md: 2 },
+                        mb: 2,
                         border: '1px solid #e2e8f0',
                         backgroundColor: '#ffffff',
+                        flexShrink: 0,
                     }}
                 >
                     <Stack
@@ -377,45 +472,26 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 component="h1"
                                 sx={{
                                     mt: 0.5,
-                                    fontSize: { xs: 26, md: 34 },
+                                    fontSize: { xs: 24, md: 30 },
                                     fontWeight: 900,
                                     color: '#020617',
                                     letterSpacing: '-0.03em',
                                 }}
                             >
-                                Cześć, możesz zmienić swoje ustawienia
+                                Cześć, {name || profile?.email || 'użytkowniku'}
                             </Typography>
                         </Box>
-
-                        <Chip
-                            avatar={<Avatar>{email.slice(0, 1).toUpperCase()}</Avatar>}
-                            label={email}
-                            sx={{
-                                fontWeight: 800,
-                                backgroundColor: '#f8fafc',
-                                border: '1px solid #e2e8f0',
-                            }}
-                        />
                     </Stack>
                 </Paper>
-
-                {error && (
-                    <Alert severity="error" sx={{ mb: 2, borderRadius: '18px' }}>
-                        {error}
-                    </Alert>
-                )}
-
-                {isLoading && (
-                    <Alert severity="info" sx={{ mb: 2, borderRadius: '18px' }}>
-                        Ładowanie danych użytkownika...
-                    </Alert>
-                )}
 
                 <Box
                     sx={{
                         display: 'grid',
                         gridTemplateColumns: { xs: '1fr', lg: '0.95fr 1.35fr' },
                         gap: 3,
+                        alignItems: 'stretch',
+                        flex: 1,
+                        minHeight: 0,
                     }}
                 >
                     <Paper
@@ -425,6 +501,10 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                             p: { xs: 2, md: 3 },
                             border: '1px solid #e2e8f0',
                             backgroundColor: '#ffffff',
+                            height: '100%',
+                            minHeight: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
                         }}
                     >
                         <Stack
@@ -433,6 +513,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                             sx={{
                                 mb: 2,
                                 alignItems: 'center',
+                                flexShrink: 0,
                             }}
                         >
                             <Avatar
@@ -443,25 +524,43 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                     fontWeight: 900,
                                 }}
                             >
-                                {email.slice(0, 1).toUpperCase()}
+                                {getAvatarLetter()}
                             </Avatar>
 
                             <Box>
+                                <Typography sx={{ fontWeight: 900, color: '#020617' }}>
+                                    {name || 'Użytkownik'}
+                                </Typography>
                                 <Typography sx={{ color: '#64748b', fontSize: 14 }}>
                                     {email}
                                 </Typography>
                             </Box>
                         </Stack>
 
-                        <Divider sx={{ mb: 2 }} />
+                        <Divider sx={{ mb: 2, flexShrink: 0 }} />
 
-                        <Stack spacing={2}>
+                        <Stack
+                            spacing={2}
+                            sx={{
+                                flex: 1,
+                                minHeight: 0,
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
+                        >
                             {accountMessage && (
-                                <Alert severity="success" sx={{ borderRadius: '16px' }}>
+                                <Alert severity="success" sx={{ borderRadius: '16px', flexShrink: 0 }}>
                                     {accountMessage}
                                 </Alert>
                             )}
 
+                            <TextField
+                                label="Nazwa użytkownika"
+                                placeholder="np. Anna"
+                                fullWidth
+                                value={name}
+                                onChange={(event) => setName(event.target.value)}
+                            />
 
                             <TextField
                                 label="Adres e-mail"
@@ -470,15 +569,6 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 fullWidth
                                 value={email}
                                 onChange={(event) => setEmail(event.target.value)}
-                                slotProps={{
-                                    input: {
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <EmailOutlinedIcon />
-                                        </InputAdornment>
-                                        ),
-                                    },
-                                }}
                             />
 
                             <TextField
@@ -488,15 +578,6 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 fullWidth
                                 value={newPassword}
                                 onChange={(event) => setNewPassword(event.target.value)}
-                                slotProps={{
-                                    input: {
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <LockOutlinedIcon/>
-                                            </InputAdornment>
-                                        ),
-                                    },
-                                }}
                             />
 
                             <TextField
@@ -506,15 +587,6 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 fullWidth
                                 value={oldPassword}
                                 onChange={(event) => setOldPassword(event.target.value)}
-                                slotProps={{
-                                    input: {
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <LockOutlinedIcon />
-                                        </InputAdornment>
-                                        ),
-                                    },
-                                }}
                             />
 
                             <Button
@@ -522,6 +594,8 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 size="large"
                                 onClick={handleSaveAccount}
                                 sx={{
+                                    mt: 'auto',
+                                    flexShrink: 0,
                                     py: 1.4,
                                     borderRadius: '18px',
                                     backgroundColor: '#020617',
@@ -545,44 +619,83 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                             p: { xs: 2, md: 3 },
                             border: '1px solid #e2e8f0',
                             backgroundColor: '#ffffff',
+                            height: '100%',
+                            minHeight: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
                         }}
                     >
                         <Stack
-                            direction="row"
+                            direction={{ xs: 'column', md: 'row' }}
                             spacing={1}
                             sx={{
                                 mb: 2,
-                                alignItems: 'center',
+                                alignItems: { xs: 'flex-start', md: 'center' },
+                                flexShrink: 0,
                             }}
                         >
-                            <Typography
-                                component="h2"
+                            <Stack
+                                direction="row"
+                                spacing={1}
                                 sx={{
-                                    fontSize: { xs: 22, md: 26 },
-                                    fontWeight: 900,
-                                    color: '#020617',
+                                    alignItems: 'center',
+                                    flexShrink: 0,
                                 }}
                             >
-                                Preferencje
-                            </Typography>
-                            <SettingsOutlinedIcon sx={{ color: '#64748b' }} />
+                                <Typography
+                                    component="h2"
+                                    sx={{
+                                        fontSize: { xs: 22, md: 26 },
+                                        fontWeight: 900,
+                                        color: '#020617',
+                                    }}
+                                >
+                                    Preferencje
+                                </Typography>
+
+                                <SettingsOutlinedIcon sx={{ color: '#64748b' }} />
+                            </Stack>
+
+                            <Collapse
+                                in={Boolean(preferencesMessage)}
+                                orientation="horizontal"
+                                timeout={250}
+                                sx={{
+                                    maxWidth: { xs: '100%', md: 460 },
+                                }}
+                            >
+                                {preferencesMessage && (
+                                    <Alert
+                                        severity={preferencesMessage.severity}
+                                        sx={{
+                                            py: 0.35,
+                                            px: 1.25,
+                                            borderRadius: '14px',
+                                            fontSize: 14,
+                                            alignItems: 'center',
+                                            whiteSpace: { xs: 'normal', md: 'nowrap' },
+                                            '& .MuiAlert-icon': {
+                                                fontSize: 20,
+                                                mr: 0.75,
+                                            },
+                                            '& .MuiAlert-message': {
+                                                py: 0,
+                                            },
+                                        }}
+                                    >
+                                        {preferencesMessage.text}
+                                    </Alert>
+                                )}
+                            </Collapse>
                         </Stack>
-
-                        <Typography sx={{ color: '#64748b', mb: 3 }}>
-                            Te ustawienia wpływają na wiadomości pokazywane na stronie głównej.
-                        </Typography>
-
-                        {preferencesMessage && (
-                            <Alert severity="success" sx={{ mb: 2, borderRadius: '16px' }}>
-                                {preferencesMessage}
-                            </Alert>
-                        )}
 
                         <Box
                             sx={{
                                 display: 'grid',
                                 gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                                 gap: 2,
+                                flex: 1,
+                                minHeight: 0,
                             }}
                         >
                             <Paper
@@ -592,6 +705,11 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                     borderRadius: '22px',
                                     border: '1px solid #e2e8f0',
                                     backgroundColor: '#f8fafc',
+                                    height: '100%',
+                                    minHeight: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    overflow: 'hidden',
                                 }}
                             >
                                 <Stack
@@ -600,6 +718,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                     sx={{
                                         mb: 2,
                                         alignItems: 'center',
+                                        flexShrink: 0,
                                     }}
                                 >
                                     <LanguageOutlinedIcon sx={{ color: '#2563eb' }} />
@@ -608,7 +727,16 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                     </Typography>
                                 </Stack>
 
-                                <Stack spacing={1.2} sx={{ mb: 2 }}>
+                                <Stack
+                                    spacing={1.2}
+                                    sx={{
+                                        mb: 2,
+                                        flex: 1,
+                                        minHeight: 0,
+                                        overflowY: 'auto',
+                                        pr: 0.5,
+                                    }}
+                                >
                                     {languages.length === 0 ? (
                                         <Typography sx={{ color: '#64748b', fontSize: 14 }}>
                                             Nie dodano jeszcze języków.
@@ -625,20 +753,37 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                                     borderRadius: '14px',
                                                     backgroundColor: '#ffffff',
                                                     border: '1px solid #e2e8f0',
-                                                    fontWeight: 700,
+                                                    fontWeight: 800,
+                                                    fontSize: 16,
+                                                    height: 42,
+                                                    flexShrink: 0,
+                                                    '& .MuiChip-label': {
+                                                        px: 1.5,
+                                                    },
+                                                    '& .MuiChip-deleteIcon': {
+                                                        fontSize: 22,
+                                                    },
                                                 }}
                                             />
                                         ))
                                     )}
                                 </Stack>
 
-                                <Stack direction="row" spacing={1}>
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{
+                                        flexShrink: 0,
+                                    }}
+                                >
                                     <TextField
                                         label="Dodaj język"
                                         select
                                         fullWidth
                                         value={selectedLanguage}
-                                        onChange={(event) => setSelectedLanguage(event.target.value)}
+                                        onChange={(event) =>
+                                            setSelectedLanguage(event.target.value)
+                                        }
                                     >
                                         {languageOptions.map((language) => (
                                             <MenuItem
@@ -658,6 +803,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                             borderRadius: '16px',
                                             backgroundColor: '#2563eb',
                                             color: '#ffffff',
+                                            flexShrink: 0,
                                             '&:hover': {
                                                 backgroundColor: '#1d4ed8',
                                             },
@@ -675,6 +821,11 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                     borderRadius: '22px',
                                     border: '1px solid #e2e8f0',
                                     backgroundColor: '#f8fafc',
+                                    height: '100%',
+                                    minHeight: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    overflow: 'hidden',
                                 }}
                             >
                                 <Stack
@@ -683,6 +834,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                     sx={{
                                         mb: 2,
                                         alignItems: 'center',
+                                        flexShrink: 0,
                                     }}
                                 >
                                     <KeyOutlinedIcon sx={{ color: '#2563eb' }} />
@@ -691,7 +843,16 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                     </Typography>
                                 </Stack>
 
-                                <Stack spacing={1.2} sx={{ mb: 2 }}>
+                                <Stack
+                                    spacing={1.2}
+                                    sx={{
+                                        mb: 2,
+                                        flex: 1,
+                                        minHeight: 0,
+                                        overflowY: 'auto',
+                                        pr: 0.5,
+                                    }}
+                                >
                                     {keywords.length === 0 ? (
                                         <Typography sx={{ color: '#64748b', fontSize: 14 }}>
                                             Nie dodano jeszcze słów kluczowych.
@@ -708,14 +869,29 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                                     borderRadius: '14px',
                                                     backgroundColor: '#ffffff',
                                                     border: '1px solid #e2e8f0',
-                                                    fontWeight: 700,
+                                                    fontWeight: 800,
+                                                    fontSize: 16,
+                                                    height: 42,
+                                                    flexShrink: 0,
+                                                    '& .MuiChip-label': {
+                                                        px: 1.5,
+                                                    },
+                                                    '& .MuiChip-deleteIcon': {
+                                                        fontSize: 22,
+                                                    },
                                                 }}
                                             />
                                         ))
                                     )}
                                 </Stack>
 
-                                <Stack direction="row" spacing={1}>
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{
+                                        flexShrink: 0,
+                                    }}
+                                >
                                     <TextField
                                         label="Dodaj słowo"
                                         placeholder="np. sport"
@@ -738,6 +914,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                             borderRadius: '16px',
                                             backgroundColor: '#2563eb',
                                             color: '#ffffff',
+                                            flexShrink: 0,
                                             '&:hover': {
                                                 backgroundColor: '#1d4ed8',
                                             },
@@ -748,27 +925,6 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 </Stack>
                             </Paper>
                         </Box>
-
-                        <Button
-                            variant="contained"
-                            size="large"
-                            fullWidth
-                            sx={{
-                                mt: 3,
-                                py: 1.4,
-                                borderRadius: '18px',
-                                backgroundColor: '#020617',
-                                fontWeight: 900,
-                                textTransform: 'none',
-                                boxShadow: '0 16px 30px rgba(15, 23, 42, 0.22)',
-                                '&:hover': {
-                                    backgroundColor: '#1e293b',
-                                },
-                            }}
-                            onClick={() => setPreferencesMessage('Preferencje są zapisywane po dodaniu lub usunięciu elementu.')}
-                        >
-                            Zapisz zmiany
-                        </Button>
                     </Paper>
                 </Box>
             </Container>

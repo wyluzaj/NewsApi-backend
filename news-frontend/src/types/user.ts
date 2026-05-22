@@ -20,8 +20,8 @@ export type UserProfile = {
 export type UpdateUserAccountRequest = {
     name: string;
     email: string;
-    newPassword?: string;
     oldPassword: string;
+    newPassword?: string;
 };
 
 export type UpdateUserAccountResponse = {
