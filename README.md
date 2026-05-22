@@ -1,4 +1,65 @@
-Backend News App
+
+
+## Uruchamianie aplikacji przez Docker Compose
+
+Projekt można uruchomić za pomocą Docker Compose. W ten sposób uruchamiane są wszystkie potrzebne elementy aplikacji:
+
+- baza danych MySQL,
+- backend Spring Boot,
+- frontend React/Vite.
+
+Wymagania:
+
+- zainstalowany Docker,
+- uruchomiony Docker Desktop,
+- wolne porty:
+- `8080` dla backendu, http://localhost:8080
+- `5173` dla frontendu, http://localhost:5173
+- `3307` dla bazy danych MySQL.
+
+Swagger UI dostępny pod http://localhost:8080/swagger-ui/index.html
+
+Aby uruchomić aplikację, w głównym folderze projektu wykonaj:
+
+`
+docker compose up --build
+`
+
+Aby zatrzymać uruchomione kontenery, użyj:
+
+`
+docker compose down
+`
+
+To polecenie zatrzymuje kontenery, ale nie usuwa danych zapisanych w bazie.
+
+Jeśli chcesz zatrzymać kontenery i całkowicie wyczyścić bazę danych, użyj:
+
+`
+docker compose down -v
+`
+## Frontend
+
+Frontend aplikacji znajduje się w folderze:
+
+`news-frontend`
+
+Został wykonany w technologii React z użyciem narzędzia Vite. Aplikacja frontendowa odpowiada za wyświetlanie interfejsu użytkownika oraz komunikację z backendem przez zapytania API.
+
+Frontend zawiera:
+
+- stronę logowania,
+- stronę rejestracji,
+- stronę główną z listą artykułów,
+- filtrowanie i paginację artykułów,
+- panel użytkownika,
+- edycję danych użytkownika,
+- zmianę hasła,
+- zarządzanie preferencjami użytkownika, takimi jak języki i słowa kluczowe.
+
+Po zalogowaniu użytkownik widzi artykuły pobierane z backendu. Wyniki są dopasowywane do zapisanych preferencji użytkownika, czyli wybranych języków oraz słów kluczowych.
+
+## Backend News App
 
 Aplikacja integrująca bazę danych ze słowami kluczowymi użytkowników z zewnętrznym API NewsApi.
 Funkcjonalności
