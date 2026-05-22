@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: news_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: newsapi
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+    container_name: news_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/newsapi
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    restart: always
+
+  frontend:
+    build:
+      context: ./news-frontend
+    container_name: news_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    environment:
+      IS_DOCKER: "true"
+
+volumes:
+  db_data:
