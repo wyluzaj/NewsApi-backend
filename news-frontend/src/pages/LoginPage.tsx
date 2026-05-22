@@ -36,8 +36,9 @@ export function LoginPage({ onGoToRegister }: LoginPageProps) {
 
             localStorage.setItem('token', response.token);
             localStorage.setItem('userId', String(response.userId));
+            localStorage.setItem('email', email);
 
-            alert('Zalogowano poprawnie');
+            window.dispatchEvent(new Event('auth-changed'));
         } catch {
             setError('Nie udało się zalogować. Sprawdź dane.');
         }
