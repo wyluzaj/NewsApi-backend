@@ -80,6 +80,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
     const [email, setEmail] = useState(savedEmail);
     const [newPassword, setNewPassword] = useState('');
     const [oldPassword, setOldPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
     const [languages, setLanguages] = useState<UserLanguage[]>([]);
     const [keywords, setKeywords] = useState<UserKeyword[]>([]);
@@ -89,9 +90,14 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
 
     const [error, setError] = useState('');
     const [accountMessage, setAccountMessage] = useState('');
+    const [accountMessageSeverity, setAccountMessageSeverity] = useState<'success' | 'error'>('success');
     const [preferencesMessage, setPreferencesMessage] =
         useState<PreferencesMessage | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const isNewPasswordMismatch =
+        newPassword.trim().length > 0 &&
+        confirmNewPassword.trim().length > 0 &&
+        newPassword.trim() !== confirmNewPassword.trim();
 
     function getAvatarLetter() {
         const source = name.trim() || email.trim();
@@ -116,6 +122,20 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
             window.clearTimeout(timer);
         };
     }, [preferencesMessage]);
+
+    useEffect(() => {
+        if (!accountMessage) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => {
+            setAccountMessage('');
+        }, 4500);
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [accountMessage]);
 
     async function loadProfile() {
         if (!userId) {
@@ -158,17 +178,41 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
         setAccountMessage('');
 
         if (!name.trim()) {
-            setError('Nazwa użytkownika jest wymagana.');
+            setAccountMessageSeverity('error');
+            setAccountMessage('Nazwa użytkownika jest wymagana.');
             return;
         }
 
         if (!email.trim()) {
-            setError('Adres e-mail jest wymagany.');
+            setAccountMessageSeverity('error');
+            setAccountMessage('Adres e-mail jest wymagany.');
             return;
         }
 
         if (!oldPassword.trim()) {
-            setError('Wpisz stare hasło, aby zapisać zmiany konta.');
+            setAccountMessageSeverity('error');
+            setAccountMessage('Wpisz stare hasło, aby zapisać zmiany konta.');
+            return;
+        }
+
+        const cleanedNewPassword = newPassword.trim();
+        const cleanedConfirmNewPassword = confirmNewPassword.trim();
+
+        if (cleanedNewPassword && !cleanedConfirmNewPassword) {
+            setAccountMessageSeverity('error');
+            setAccountMessage('Powtórz nowe hasło.');
+            return;
+        }
+
+        if (!cleanedNewPassword && cleanedConfirmNewPassword) {
+            setAccountMessageSeverity('error');
+            setAccountMessage('Wpisz nowe hasło.');
+            return;
+        }
+
+        if (cleanedNewPassword && cleanedNewPassword !== cleanedConfirmNewPassword) {
+            setAccountMessageSeverity('error');
+            setAccountMessage('Nowe hasła nie są takie same.');
             return;
         }
 
@@ -177,7 +221,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                 name: name.trim(),
                 email: email.trim(),
                 oldPassword,
-                newPassword: newPassword.trim() || undefined,
+                newPassword: cleanedNewPassword || undefined,
             });
 
             setProfile(response.user);
@@ -187,13 +231,16 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
             setKeywords(response.user.keywords ?? []);
             setOldPassword('');
             setNewPassword('');
+            setConfirmNewPassword('');
 
             localStorage.setItem('token', response.token);
             localStorage.setItem('email', response.user.email);
 
+            setAccountMessageSeverity('success');
             setAccountMessage('Dane konta zostały zapisane.');
         } catch {
-            setError('Nie udało się zapisać danych konta. Sprawdź stare hasło.');
+            setAccountMessageSeverity('error');
+            setAccountMessage('Nie udało się zapisać danych konta. Sprawdź stare hasło.');
         }
     }
 
@@ -508,39 +555,80 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                         }}
                     >
                         <Stack
-                            direction="row"
+                            direction={{ xs: 'column', sm: 'row' }}
                             spacing={1.5}
                             sx={{
                                 mb: 2,
-                                alignItems: 'center',
+                                alignItems: { xs: 'flex-start', sm: 'center' },
                                 flexShrink: 0,
                             }}
                         >
-                            <Avatar
+                            <Stack
+                                direction="row"
+                                spacing={1.5}
                                 sx={{
-                                    width: 52,
-                                    height: 52,
-                                    backgroundColor: '#2563eb',
-                                    fontWeight: 900,
+                                    alignItems: 'center',
+                                    flexShrink: 0,
                                 }}
                             >
-                                {getAvatarLetter()}
-                            </Avatar>
+                                <Avatar
+                                    sx={{
+                                        width: 52,
+                                        height: 52,
+                                        backgroundColor: '#2563eb',
+                                        fontWeight: 900,
+                                    }}
+                                >
+                                    {getAvatarLetter()}
+                                </Avatar>
 
-                            <Box>
-                                <Typography sx={{ fontWeight: 900, color: '#020617' }}>
-                                    {name || 'Użytkownik'}
-                                </Typography>
-                                <Typography sx={{ color: '#64748b', fontSize: 14 }}>
-                                    {email}
-                                </Typography>
-                            </Box>
+                                <Box>
+                                    <Typography sx={{ fontWeight: 900, color: '#020617' }}>
+                                        {name || 'Użytkownik'}
+                                    </Typography>
+                                    <Typography sx={{ color: '#64748b', fontSize: 14 }}>
+                                        {email}
+                                    </Typography>
+                                </Box>
+                            </Stack>
+
+                            <Collapse
+                                in={Boolean(accountMessage)}
+                                orientation="horizontal"
+                                timeout={250}
+                                sx={{
+                                    maxWidth: { xs: '100%', sm: 360 },
+                                }}
+                            >
+                                {accountMessage && (
+                                    <Alert
+                                        severity={accountMessageSeverity}
+                                        sx={{
+                                            py: 0.35,
+                                            px: 1.25,
+                                            borderRadius: '14px',
+                                            fontSize: 14,
+                                            alignItems: 'center',
+                                            whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                                            '& .MuiAlert-icon': {
+                                                fontSize: 20,
+                                                mr: 0.75,
+                                            },
+                                            '& .MuiAlert-message': {
+                                                py: 0,
+                                            },
+                                        }}
+                                    >
+                                        {accountMessage}
+                                    </Alert>
+                                )}
+                            </Collapse>
                         </Stack>
 
                         <Divider sx={{ mb: 2, flexShrink: 0 }} />
 
                         <Stack
-                            spacing={2}
+                            spacing={1.4}
                             sx={{
                                 flex: 1,
                                 minHeight: 0,
@@ -548,11 +636,6 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 flexDirection: 'column',
                             }}
                         >
-                            {accountMessage && (
-                                <Alert severity="success" sx={{ borderRadius: '16px', flexShrink: 0 }}>
-                                    {accountMessage}
-                                </Alert>
-                            )}
 
                             <TextField
                                 label="Nazwa użytkownika"
@@ -560,6 +643,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 fullWidth
                                 value={name}
                                 onChange={(event) => setName(event.target.value)}
+                                helperText=" "
                             />
 
                             <TextField
@@ -569,6 +653,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 fullWidth
                                 value={email}
                                 onChange={(event) => setEmail(event.target.value)}
+                                helperText=" "
                             />
 
                             <TextField
@@ -578,6 +663,18 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 fullWidth
                                 value={newPassword}
                                 onChange={(event) => setNewPassword(event.target.value)}
+                                helperText=" "
+                            />
+
+                            <TextField
+                                label="Powtórz nowe hasło"
+                                placeholder="Wpisz nowe hasło ponownie"
+                                type="password"
+                                fullWidth
+                                value={confirmNewPassword}
+                                onChange={(event) => setConfirmNewPassword(event.target.value)}
+                                error={isNewPasswordMismatch}
+                                helperText={isNewPasswordMismatch ? 'Hasła muszą być takie same.' : ' '}
                             />
 
                             <TextField
@@ -587,6 +684,7 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 fullWidth
                                 value={oldPassword}
                                 onChange={(event) => setOldPassword(event.target.value)}
+                                helperText=" "
                             />
 
                             <Button
@@ -594,7 +692,6 @@ export function UserPage({ onGoToHome, onLogout }: UserPageProps) {
                                 size="large"
                                 onClick={handleSaveAccount}
                                 sx={{
-                                    mt: 'auto',
                                     flexShrink: 0,
                                     py: 1.4,
                                     borderRadius: '18px',
