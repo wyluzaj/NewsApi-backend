@@ -16,8 +16,6 @@ import pl.edu.pwr.news.repository.UserLanguageRepository;
 import pl.edu.pwr.news.repository.UserRepository;
 import pl.edu.pwr.news.security.JwtService;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -38,6 +36,7 @@ public class AuthService {
         // 2. Tworzymy usera i szyfrujemy hasło
         User user = new User();
         user.setEmail(request.getEmail());
+        user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         // Zapisujemy usera najpierw, żeby dostał ID z bazy (potrzebne do relacji)
