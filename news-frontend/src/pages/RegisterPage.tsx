@@ -16,6 +16,20 @@ type RegisterPageProps = {
     onGoToLogin: () => void;
 };
 
+const languageOptions = [
+    { language: 'polski', abbreviation: 'pl', label: 'polski / pl' },
+    { language: 'german', abbreviation: 'de', label: 'german / de' },
+    { language: 'english', abbreviation: 'en', label: 'english / en' },
+    { language: 'spanish', abbreviation: 'es', label: 'spanish / es' },
+    { language: 'french', abbreviation: 'fr', label: 'french / fr' },
+    { language: 'italian', abbreviation: 'it', label: 'italian / it' },
+    { language: 'dutch', abbreviation: 'nl', label: 'dutch / nl' },
+    { language: 'norwegian', abbreviation: 'no', label: 'norwegian / no' },
+    { language: 'portuguese', abbreviation: 'pt', label: 'portuguese / pt' },
+    { language: 'russian', abbreviation: 'ru', label: 'russian / ru' },
+    { language: 'swedish', abbreviation: 'sv', label: 'swedish / sv' },
+];
+
 export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -210,10 +224,11 @@ export function RegisterPage({ onGoToLogin }: RegisterPageProps) {
                             value={language}
                             onChange={(event) => setLanguage(event.target.value)}
                         >
-                            <MenuItem value="pl">polski / pl</MenuItem>
-                            <MenuItem value="en">english / en</MenuItem>
-                            <MenuItem value="de">deutsch / de</MenuItem>
-                            <MenuItem value="fr">français / fr</MenuItem>
+                            {languageOptions.map((option) => (
+                                <MenuItem key={option.abbreviation} value={option.abbreviation}>
+                                    {option.label}
+                                </MenuItem>
+                            ))}
                         </TextField>
 
                         <Button
