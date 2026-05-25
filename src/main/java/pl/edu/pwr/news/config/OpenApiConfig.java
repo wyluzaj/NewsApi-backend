@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(title = "News API", version = "v1.0"),
-        // To sprawia, że kłódka pojawia się globalnie przy każdym endpoincie
         security = @SecurityRequirement(name = "bearerAuth")
 )
 @SecurityScheme(
