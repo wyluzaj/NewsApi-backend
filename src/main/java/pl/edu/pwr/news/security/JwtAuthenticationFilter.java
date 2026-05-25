@@ -33,16 +33,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
-        // Jeśli nie ma nagłówka z tokenem, puszczamy dalej (zostanie zablokowane na kolejnym etapie, chyba że to endpoint logowania)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7); // Ucinamy "Bearer "
+        jwt = authHeader.substring(7); 
         username = jwtService.extractUsername(jwt);
 
-        // Jeśli mamy username w tokenie, ale użytkownik nie jest jeszcze "zalogowany" w tym żądaniu
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
