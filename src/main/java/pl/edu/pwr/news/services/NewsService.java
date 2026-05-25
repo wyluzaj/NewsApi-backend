@@ -121,7 +121,7 @@ public class NewsService {
         return fetchFromEverything(query, lang, "popularity");
     }
 
-    // --- METODY POMOCNICZE ---
+    //  --- METODY POMOCNICZE ---
 
     private User getUserOrThrow(int userId) {
         return userRepository.findById(userId)
