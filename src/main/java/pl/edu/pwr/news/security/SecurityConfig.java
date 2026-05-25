@@ -22,9 +22,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) // Wyłączamy CSRF, bo używamy tokenów
+                .csrf(AbstractHttpConfigurer::disable) 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Logowanie i rejestracja są dostępne dla każdego
+                        .requestMatchers("/api/auth/**").permitAll() 
                         // --- TUTAJ DODAJEMY WYJĄTKI DLA SWAGGERA ---
                         .requestMatchers(
                                 "/v3/api-docs/**",
@@ -33,9 +33,9 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
                         // ------------------------------------------
-                        .anyRequest().authenticated() // WSZYSTKO INNE WYMAGA TOKENA!
+                        .anyRequest().authenticated() 
                 )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Aplikacja nie pamięta sesji
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) 
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
