@@ -56,6 +56,13 @@ const languages = [
     { value: 'en', label: 'english / en' },
     { value: 'de', label: 'deutsch / de' },
     { value: 'fr', label: 'français / fr' },
+    { value:'es', label: 'spanish / es' },
+    { value: 'it', label: 'italian / it' },
+    { value: 'nl', label: 'dutch / nl' },
+    { value: 'no', label: 'norwegian / no' },
+    { value: 'pt', label: 'portuguese / pt' },
+    { value:'ru', label: 'russian / ru' },
+    { value:'sv', label: 'swedish / sv' },
 ];
 
 function formatDate(value?: string | null) {
