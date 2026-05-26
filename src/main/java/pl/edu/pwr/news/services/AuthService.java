@@ -21,28 +21,24 @@ import pl.edu.pwr.news.security.JwtService;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final UserKeywordRepository keywordRepository; // Musisz mieć to repozytorium!
-    private final UserLanguageRepository languageRepository; // Musisz mieć to repozytorium!
+    private final UserKeywordRepository keywordRepository;
+    private final UserLanguageRepository languageRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(RegisterRequest request) {
-        // 1. Sprawdzamy czy user istnieje
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Użytkownik już istnieje!");
         }
 
-        // 2. Tworzymy usera i szyfrujemy hasło
         User user = new User();
         user.setEmail(request.getEmail());
         user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        // Zapisujemy usera najpierw, żeby dostał ID z bazy (potrzebne do relacji)
         User savedUser = userRepository.save(user);
 
-        // 3. Dodajemy jedno słowo kluczowe
         if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
             UserKeyword keyword = new UserKeyword();
             keyword.setKeyword(request.getKeyword());
@@ -50,7 +46,6 @@ public class AuthService {
             keywordRepository.save(keyword);
         }
 
-        // 4. Dodajemy jeden język (kod)
         if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
             UserLanguage language = new UserLanguage();
             language.setAbbreviation(request.getLanguage());
@@ -59,18 +54,15 @@ public class AuthService {
         }
 
 
-        // 5. Generujemy token
         String jwtToken = jwtService.generateToken(savedUser);
         return new AuthResponse(jwtToken, savedUser.getId());
     }
 
     public AuthResponse login(LoginRequest request) {
-        // To rzuci wyjątek, jeśli hasło jest złe
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        // Jeśli przeszło, szukamy usera i generujemy token
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Użytkownik nie znaleziony"));
 

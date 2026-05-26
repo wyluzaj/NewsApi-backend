@@ -98,7 +98,7 @@ public class NewsService {
         }
 
         String lang = getLanguage(user);
-        final String finalKeyword = firstKeyword; // Zmienna musi być finalna lub efektywnie finalna dla lambdy
+        final String finalKeyword = firstKeyword; 
 
         return webClient.get()
                 .uri(uriBuilder -> {
@@ -121,7 +121,7 @@ public class NewsService {
         return fetchFromEverything(query, lang, "popularity");
     }
 
-    // --- METODY POMOCNICZE (z usuniętymi wartościami domyślnymi) ---
+    //  --- METODY POMOCNICZE ---
 
     private User getUserOrThrow(int userId) {
         return userRepository.findById(userId)
@@ -130,7 +130,7 @@ public class NewsService {
 
     private String buildQueryFromKeywords(User user) {
         if (user.getKeywords() == null || user.getKeywords().isEmpty()) {
-            return null; // ZMIANA: Zwracamy null zamiast domyślnego słowa
+            return null; 
         }
         return user.getKeywords().stream()
                 .map(UserKeyword::getKeyword)
@@ -141,7 +141,7 @@ public class NewsService {
         if (user.getLanguages() != null && !user.getLanguages().isEmpty()) {
             return user.getLanguages().get(0).getAbbreviation();
         }
-        return null; // ZMIANA: Zwracamy null zamiast "en"
+        return null; 
     }
 
     private NewsResponse fetchFromEverything(String query, String lang, String sortBy) {
